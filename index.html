@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head prefix="og: http://ogp.me/ns#">
+    <meta charset="UTF-8">
+    <base target="_blank">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>検索ハブ</title>
+    <!-- Chrome / Firefox / Edge -->
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20style%3D%22dominant-baseline%3Acentral%3Btext-anchor%3Amiddle%3Bfont-size%3A90px%3B%22%3E%F0%9F%A7%AD%3C%2Ftext%3E%3C%2Fsvg%3E">
+    <!-- Safari / IE -->
+    <link rel="icon alternate" type="image/png"
+        href="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f9ed.png" />
+    <link rel="stylesheet" type="text/css" href="milligram.min.css">
+    <link rel="stylesheet" type="text/css" href="additional.css">
+</head>
+
+<body>
+    <div id="app">
+        <div class="container">
+            <textarea v-model="content"></textarea>
+            <p>行ごとに検索リンクを生成します。検索時に約物類は自動でスペースに変換されます。</p>
+            <ul>
+                <link-container v-for="(line, idx) in contentLines" :target="line"></link-container>
+            </ul>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.37/dist/vue.global.js"></script>
+    <script>
+
+        class NoiseCleaner {
+            constructor(s) {
+                this._rawQuery = String(s);
+            }
+            isNoise(idx) {
+                const c = this._rawQuery.charCodeAt(idx)
+                return (0x0021 <= c && c <= 0x002F)
+                    || (0x003A <= c && c <= 0x0040)
+                    || (0x005B <= c && c <= 0x0060)
+                    || (0x007B <= c && c <= 0x007E)
+                    || (0x2018 <= c && c <= 0x201F)
+                    || (0x2010 <= c && c <= 0x2017)
+                    || (0x2500 <= c && c <= 0x2501)
+                    || (0x2E3A <= c && c <= 0x2E3B)
+                    || (0x25A0 <= c && c <= 0x25EF)
+                    || (0x3000 <= c && c <= 0x3004)
+                    || (0x3008 <= c && c <= 0x3040)
+                    || (0x3097 <= c && c <= 0x30A0)
+                    || (0x3097 <= c && c <= 0x30A0)
+                    || (0x30FD <= c && c <= 0x30FF)
+                    || (0xFF01 <= c && c <= 0xFF0F)
+                    || (0xFF1A <= c && c <= 0xFF20)
+                    || (0xFF3B <= c && c <= 0xFF40)
+                    || (0xFF5B <= c && c <= 0xFF65)
+                    || (0x2E80 <= c && c <= 0x2EF3)
+                    || (c === 0x30FB);
+            }
+            cleanup() {
+                let s = "";
+                for (let i = 0; i < this._rawQuery.length; i++) {
+                    if (this.isNoise(i)) {
+                        s += " ";
+                    } else {
+                        const c = this._rawQuery.charAt(i);
+                        s += c;
+                    }
+                }
+                return s.replace(/\s+/g, " ").trim();
+            }
+        }
+
+        const linkButton = {
+            props: ["name", "base", "target"],
+            computed: {
+                linkTo: function () {
+                    const nc = new NoiseCleaner(this.target);
+                    return this.base + encodeURIComponent(nc.cleanup());
+                }
+            },
+            methods: {
+                jump: function () {
+                    window.open(this.linkTo, "_blank");
+                }
+            },
+            template: `
+            <button @click="jump">{{name}}</button>
+            `
+        }
+
+        const linkContainer = {
+            data: function () {
+                return {
+                    links: [
+                        { name: "Google", base: "http://www.google.co.jp/search?q=" },
+                        { name: "Google（画像）", base: "https://www.google.com/search?tbm=isch&q=" },
+                        { name: "Google Scholar", base: "https://scholar.google.co.jp/scholar?as_vis=1&q=" },
+                        { name: "Amazon Book", base: "https://www.amazon.co.jp/s?i=stripbooks&k=" },
+                        { name: "CiNii", base: "https://ci.nii.ac.jp/books/search?q=" },
+                        { name: "WebCat Plus", base: "http://webcatplus.nii.ac.jp/pro/?q=" },
+                        { name: "World Cat", base: "https://www.worldcat.org/search?q=" },
+                    ]
+                }
+            },
+            props: ["target"],
+            components: {
+                "link-button": linkButton
+            },
+            template: `<li>
+            {{target}}
+            <div class="wrapper-box">
+            <link-button v-for="(lnk, idx) in links" :name="lnk.name" :base="lnk.base" :target="target"></link-button>
+            </div>
+            </li>`
+        }
+
+        const vm = Vue.createApp({
+            data: function () {
+                return {
+                    content: [
+                        "夏目漱石『吾輩は猫である』",
+                        "梶井基次郎『檸檬』",
+                        "井伏鱒二『山椒魚』"
+                    ].join("\n")
+                }
+            },
+            computed: {
+                contentLines: function () {
+                    return this.content.split(/\n/).map((line) => String(line)).filter((line) => 0 < line.length);
+                }
+            },
+            components: {
+                "link-container": linkContainer
+            }
+        });
+        vm.mount("#app");
+    </script>
+</body>
+
+</html>

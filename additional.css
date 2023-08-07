@@ -1,0 +1,22 @@
+textarea {
+  min-height: 10rem;
+}
+
+li {
+  list-style: none;
+  font-weight: bold;
+  font-size: 2rem;
+  padding: 4px;
+}
+li:nth-child(even) {
+  background-color: #f0f0f0;
+}
+
+.container {
+  max-width: 900px;
+}
+
+button {
+  margin: 4px 6px;
+  font-size: 1.25rem;
+}
