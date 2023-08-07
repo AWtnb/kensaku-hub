@@ -16,6 +16,10 @@ li:nth-child(even) {
   max-width: 900px;
 }
 
+.wrapper-box {
+  margin-bottom: 2em;
+}
+
 button {
   margin: 4px 6px;
   font-size: 1.25rem;
