@@ -117,7 +117,7 @@
         }
 
         const linkBox = {
-            props: ["name", "base", "target"],
+            props: ["name", "base", "target", "site"],
             computed: {
                 linkTo: function () {
                     const nc = new NoiseCleaner(this.target);
@@ -125,22 +125,28 @@
                 }
             },
             template: `
-            <a :href="linkTo" class="box">{{name}}</a>
+            <a :href="linkTo" class="box" :class="site">{{name}}</a>
             `
         }
+
+        const SEARCH_ENGINES = [
+            { name: "Google", site: "google", base: "http://www.google.co.jp/search?q=" },
+            { name: "Google（画像）", site: "google", base: "https://www.google.com/search?tbm=isch&q=" },
+            { name: "Google（書誌データベース）", site: "google", base: "https://www.google.com/search?q=site%3Abooks.or.jp%20" },
+            { name: "Google Scholar", site: "google", base: "https://scholar.google.co.jp/scholar?as_vis=1&q=" },
+            { name: "Amazon Book", site: "amazon", base: "https://www.amazon.co.jp/s?i=stripbooks&k=" },
+            { name: "CiNii（書籍）", site: "cinii-book", base: "https://ci.nii.ac.jp/books/search?q=" },
+            { name: "CiNii（論文）", site: "cinii-article", base: "https://cir.nii.ac.jp/articles?q=" },
+            { name: "NDL（国会図書館）サーチ", site: "ndl", base: "https://iss.ndl.go.jp/books?any=" },
+            { name: "版元ドットコム", site: "hanmoto", base: "https://www.hanmoto.com/bd/search/top?title=" },
+            { name: "WebCat Plus", site: "webcat", base: "http://webcatplus.nii.ac.jp/pro/?q=" },
+            { name: "World Cat", site: "worldcat", base: "https://www.worldcat.org/search?q=" },
+        ];
 
         const linkContainer = {
             data: function () {
                 return {
-                    links: [
-                        { name: "Google", base: "http://www.google.co.jp/search?q=" },
-                        { name: "Google（画像）", base: "https://www.google.com/search?tbm=isch&q=" },
-                        { name: "Google Scholar", base: "https://scholar.google.co.jp/scholar?as_vis=1&q=" },
-                        { name: "Amazon Book", base: "https://www.amazon.co.jp/s?i=stripbooks&k=" },
-                        { name: "CiNii", base: "https://ci.nii.ac.jp/books/search?q=" },
-                        { name: "WebCat Plus", base: "http://webcatplus.nii.ac.jp/pro/?q=" },
-                        { name: "World Cat", base: "https://www.worldcat.org/search?q=" },
-                    ]
+                    links: SEARCH_ENGINES
                 }
             },
             props: ["target"],
@@ -150,7 +156,7 @@
             template: `<li>
             <span class="line">{{target}}</span>
             <div class="wrapper-box">
-            <link-box v-for="(lnk, idx) in links" :name="lnk.name" :base="lnk.base" :target="target"></link-box>
+            <link-box v-for="(lnk, idx) in links" :name="lnk.name" :base="lnk.base" :target="target" :site="lnk.site"></link-box>
             </div>
             </li>`
         }
